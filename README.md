@@ -31,7 +31,7 @@ The existing English presentation and cream / pale blue / orange visual palette 
 
 ## Data and interpretation
 
-`public/data/eurostat-sdg-05-20.json` is a Eurostat JSON-stat snapshot retrieved on 16 September 2026:
+`src/data/eurostat-sdg-05-20.json` is a Eurostat JSON-stat snapshot retrieved on 16 September 2026. Vite serves and publishes that same file at `/data/eurostat-sdg-05-20.json` for downloads:
 
 https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sdg_05_20?lang=EN&geo=DE&geo=SE&sinceTimePeriod=2014
 

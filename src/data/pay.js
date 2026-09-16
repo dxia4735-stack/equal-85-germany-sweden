@@ -1,4 +1,4 @@
-import dataset from '../../public/data/eurostat-sdg-05-20.json';
+import dataset from './eurostat-sdg-05-20.json';
 // Decode the source snapshot instead of maintaining a second hand-entered series.
 const years = Object.keys(dataset.dimension.time.category.index);
 const count = years.length;
