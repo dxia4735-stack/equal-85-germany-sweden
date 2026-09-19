@@ -1,18 +1,35 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArrowDown, ArrowUpRight, ArrowUp, Plus, Minus, Menu, X } from 'lucide-react';
 import './index.css';
+import './editorial.css';
+import 'lenis/dist/lenis.css';
+import './reference-theme.css';
+import { useEditorialMotion } from './useEditorialMotion';
 import { SOURCES, POLICIES, DRIVERS } from './data/content';
 import { PAY_SERIES, LATEST, RETRIEVED, SOURCE_UPDATED, payRatio } from './data/pay';
 
 const chapters = [['meaning', 'The promise'], ['compare', 'The gap'], ['policies', 'The response'], ['verdict', 'The takeaway']];
+function RollTitle({ id, lines, ghost = -1 }) {
+  return <h2 id={id} className="roll-title">{lines.map((line, i) => <span className="roll-line" key={line}><span className={`roll-inner ${ghost === i ? 'ghost-word' : ''}`}>{line}</span></span>)}</h2>;
+}
+function EditorialImage({ name, alt = '', className, eager = false }) {
+  return <img className={className} src={`/assets/${name}-1440.webp`} srcSet={[375,768,1024,1440,1920].map(w=>`/assets/${name}-${w}.webp ${w}w`).join(', ')} sizes={eager ? '100vw' : '(max-width: 760px) 90vw, 45vw'} alt={alt} loading={eager ? 'eager' : 'lazy'} fetchPriority={eager ? 'high' : 'auto'}/>;
+}
 function Header() {
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const close = (event) => { if (event.key === 'Escape') setOpen(false); };
     window.addEventListener('keydown', close);
     return () => window.removeEventListener('keydown', close);
   }, []);
-  return <header className="site-header">
+  useEffect(() => {
+    const update = () => setScrolled(window.scrollY > 60);
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    return () => window.removeEventListener('scroll', update);
+  }, []);
+  return <header className={`site-header ${scrolled ? 'scrolled' : ''}`}>
     <a className="brand" href="#top" aria-label="Equal 8.5 home">EQUAL<span>/ 8.5</span></a>
     <nav id="navigation" className={open ? 'is-open' : ''} aria-label="Primary navigation">
       {chapters.map(([id, title]) => <a key={id} href={`#${id}`} onClick={() => setOpen(false)}>{title}</a>)}
@@ -22,20 +39,42 @@ function Header() {
   </header>;
 }
 function Hero() {
-  return <section className="hero" id="top" aria-labelledby="hero-title">
-    <div className="hero-topline"><span className="eyebrow">A closer look at equal pay</span><span className="eyebrow">Germany × Sweden</span></div>
-    <div className="hero-composition">
-      <div className="hero-title-wrap"><h1 id="hero-title">EQUAL<br/>WORK.<br/><span>EQUAL PAY</span><em>?</em></h1></div>
-      <div className="hero-photo" aria-hidden="true"><img src="/assets/people.jpg" alt="" fetchPriority="high"/><span className="photo-equals">=</span></div>
-      <span className="hero-side">SAME AMBITION. DIFFERENT REALITIES.</span>
+  const scene = useRef(null);
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const el = scene.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const progress = media.matches ? 0 : Math.max(0, Math.min(1, -rect.top / Math.max(1, rect.height - window.innerHeight)));
+      el.style.setProperty('--journey', progress);
+    };
+    const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
+    update();
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    media.addEventListener('change', schedule);
+    return () => { cancelAnimationFrame(frame); window.removeEventListener('scroll', schedule); window.removeEventListener('resize', schedule); media.removeEventListener('change', schedule); };
+  }, []);
+  return <section ref={scene} className="cinema-hero" id="top" aria-labelledby="hero-title">
+    <div className="hero-stage">
+      <EditorialImage className="hero-architecture" name="campus" eager/>
+      <div className="atmosphere atmosphere-back" aria-hidden="true"/><div className="atmosphere atmosphere-front" aria-hidden="true"/>
+      <div className="hero-shade"/>
+      <div className="hero-intro"><p className="eyebrow">Germany × Sweden / SDG 8.5</p><h1 id="hero-title">Equal work.<br/><span>Equal pay?</span></h1><p>Two countries. One unfinished promise.</p></div>
+      <a className="hero-explore" href="#meaning"><span>Explore the distance</span><ArrowDown size={22}/></a>
+      <span className="hero-edition">A closer look at equality<br/>2014 — 2024</span>
+      <div className="hero-type-scene" aria-hidden="true"><span className="image-word">EQUAL</span><span className="word-caption">The value of work.</span><span className="word-foot">SAME AMBITION. DIFFERENT REALITIES.</span></div>
     </div>
-    <div className="hero-bottom"><p>Two countries. One unfinished promise.<br/>Explore the distance between equal work<br className="desktop-break"/> and equal pay.</p><a className="round-link" href="#meaning"><span>Explore the story</span><span className="circle"><ArrowDown size={22}/></span></a><span className="target-label">UN Sustainable Development Goals<br/><strong>Target 8.5</strong></span></div>
   </section>;
 }
 function Meaning() {
   return <section className="meaning section-pad" id="meaning" aria-labelledby="meaning-title">
     <p className="eyebrow chapter-label">01 / The promise</p>
-    <div><h2 id="meaning-title">The value of work.<br/><span className="muted">Not the gender<br/>of the worker.</span></h2><p className="lead">Equal pay means equal remuneration for equal work or work of equal value.</p><p>Jobs do not need identical titles to be of equal value. Skills, effort, responsibility and working conditions matter. SDG Target 8.5 places equal pay within the ambition for decent work for all by 2030.</p><a className="text-link" href="https://sdgs.un.org/goals/goal8" target="_blank" rel="noreferrer">Read the UN target <ArrowUpRight size={15}/></a></div>
+    <div><RollTitle id="meaning-title" lines={['The value of work.','Not the gender','of the worker.']} ghost={2}/><p className="lead">Equal pay means equal remuneration for equal work or work of equal value.</p><p>Jobs do not need identical titles to be of equal value. Skills, effort, responsibility and working conditions matter. SDG Target 8.5 places equal pay within the ambition for decent work for all by 2030.</p><a className="text-link pill-link" href="https://sdgs.un.org/goals/goal8" target="_blank" rel="noreferrer">Read the UN target <ArrowUpRight size={15}/></a></div>
+    <div className="arrow-ribbon" aria-hidden="true">{['people','office','building','people'].map((name,i)=><div className="arrow-window" key={i}><EditorialImage name={name}/></div>)}</div>
   </section>;
 }
 function SourceLink({ name, children }) {
@@ -65,7 +104,7 @@ function Compare() {
     { title: `Sweden: ${payRatio(LATEST.se)} out of 100.`, text: `Sweden’s corresponding gap was ${LATEST.se.toFixed(1)}% — ${(LATEST.de - LATEST.se).toFixed(1)} percentage points below Germany’s. A smaller national gap is progress on this measure, but it does not establish equal pay in every workplace.`, tag: 'SE / Sweden' },
   ];
   return <section id="compare" className="compare section-pad" aria-labelledby="compare-title">
-    <div className="section-heading"><p className="eyebrow">02 / The gap</p><h2 id="compare-title">Same promise.<br/>Different distances.</h2><p>One source. One year. One definition.<br/>Unadjusted gender pay gap · {LATEST.year}</p></div>
+    <div className="section-heading"><p className="eyebrow">02 / The gap</p><RollTitle id="compare-title" lines={['Same promise.','Different distances.']} ghost={1}/><p>One source. One year. One definition.<br/>Unadjusted gender pay gap · {LATEST.year}</p></div>
     <div className="headline-metrics">
       {[['de', 'Germany'], ['se', 'Sweden']].map(([code, name]) => <article key={code} className={`country-metric ${code}`}><div className="metric-top"><h3>{name}</h3><span className="country-code">{code.toUpperCase()}</span></div><p className="big-stat">{LATEST[code].toFixed(1)}<span>%</span></p><p>lower average hourly earnings for women</p><span className="metric-foot">{LATEST.year} · provisional · Eurostat</span></article>)}
     </div>
@@ -91,7 +130,7 @@ function Trend() {
   const x = (i) => 54 + i * 57;
   const y = (value) => 290 - value * 9.4;
   return <section className="trend section-pad" aria-labelledby="trend-title">
-    <div className="section-heading"><p className="eyebrow">A decade in view</p><h2 id="trend-title">The gap can narrow.<br/>Progress can stall.</h2><p>Explore 2014–2024.<br/>Lower means a smaller average pay gap.</p></div>
+    <div className="section-heading"><p className="eyebrow">A decade in view</p><RollTitle id="trend-title" lines={['The gap can narrow.','Progress can stall.']} ghost={1}/><p>Explore 2014–2024.<br/>Lower means a smaller average pay gap.</p></div>
     <div className="trend-layout"><div className="trend-readout" aria-live="polite"><span className="selected-year">{selected.year}</span><div><span><i className="country-dot de"/>Germany</span><strong>{selected.de.toFixed(1)}<small>%</small></strong></div><div><span><i className="country-dot se"/>Sweden</span><strong>{selected.se.toFixed(1)}<small>%</small></strong></div><p className="chart-note">{selected.deStatus === 'b' ? 'Germany: break in time series.' : ''} {selected.deStatus === 'p' || selected.seStatus === 'p' ? 'Provisional values for ' + (selected.deStatus === 'p' && selected.seStatus === 'p' ? 'both countries.' : selected.deStatus === 'p' ? 'Germany.' : 'Sweden.') : ''}</p></div>
       <div className="trend-chart"><svg viewBox="0 0 680 332" role="img" aria-labelledby="trend-chart-title trend-chart-description"><title id="trend-chart-title">Unadjusted gender pay gap, Germany and Sweden, 2014 to 2024</title><desc id="trend-chart-description">Germany: 22.3 percent in 2014 to 15.6 in 2024. Sweden: 13.8 to 11.2. Germany has a break in the series in 2022. Use the year slider or data table for individual values.</desc>
         {[0, 5, 10, 15, 20, 25].map((tick) => <g key={tick}><line x1="54" x2="624" y1={y(tick)} y2={y(tick)} className="grid-line"/><text x="36" y={y(tick) + 4} textAnchor="end">{tick}%</text></g>)}
@@ -112,13 +151,13 @@ function Trend() {
 }
 
 function Drivers() {
-  return <section className="drivers section-pad" aria-labelledby="drivers-title"><p className="eyebrow">Behind the average</p><h2 id="drivers-title">A gap has<br/>more than one cause.</h2><div className="driver-grid">{DRIVERS.map((item,i)=><article key={item.title}><span className="driver-number">0{i+1}</span><h3>{item.title}</h3><p>{item.text}</p></article>)}</div><div className="driver-sources"><SourceLink name="methods">Pay-gap interpretation</SourceLink><SourceLink name="eu">Why transparency matters</SourceLink></div></section>;
+  return <section className="drivers section-pad" aria-labelledby="drivers-title"><div className="drivers-intro"><div><p className="eyebrow">Behind the average</p><RollTitle id="drivers-title" lines={['A gap has','more than','one cause.']} ghost={2}/></div><figure className="editorial-photo office-photo"><EditorialImage name="office" alt="A modern workplace with glass-walled offices"/><figcaption>Look beyond the number.<br/>Look at working lives.</figcaption></figure></div><div className="driver-grid">{DRIVERS.map((item,i)=><article key={item.title}><span className="driver-number">0{i+1}</span><h3>{item.title}</h3><p>{item.text}</p></article>)}</div><div className="driver-sources"><SourceLink name="methods">Pay-gap interpretation</SourceLink><SourceLink name="eu">Why transparency matters</SourceLink></div></section>;
 }
 
 function Policies() {
   const [active, setActive] = useState(0);
-  return <section className="policies section-pad" id="policies" aria-labelledby="policies-title"><div className="section-heading"><p className="eyebrow">03 / The response</p><h2 id="policies-title">Different tools.<br/>A shared challenge.</h2><p>Compare how the two countries approach<br/>pay information, care and the value of work.</p></div>
-    <div className="policy-list">{POLICIES.map((policy,i)=><article className={`policy ${active===i?'open':''}`} key={policy.title}><h3><button id={`policy-button-${i}`} aria-expanded={active===i} aria-controls={`policy-panel-${i}`} onClick={()=>setActive(active===i?-1:i)}><span className="eyebrow">0{i+1}</span><span>{policy.title}</span><span className="policy-toggle">{active===i ? <Minus/> : <Plus/>}</span></button></h3><div id={`policy-panel-${i}`} role="region" aria-labelledby={`policy-button-${i}`} hidden={active!==i}><p className="policy-question">{policy.question}</p><p className="eyebrow policy-label">{policy.label}</p><div className="policy-countries"><div><h4><i className="country-dot de"/>Germany</h4><p>{policy.de}</p><SourceLink name={policy.deSource}>German source</SourceLink></div><div><h4><i className="country-dot se"/>Sweden</h4><p>{policy.se}</p><SourceLink name={policy.seSource}>Swedish source</SourceLink></div></div><p className="policy-takeaway"><span>What this means</span>{policy.takeaway}</p></div></article>)}</div>
+  return <section className="policies section-pad" id="policies" aria-labelledby="policies-title"><div className="section-heading"><p className="eyebrow">03 / The response</p><RollTitle id="policies-title" lines={['Different tools.','A shared challenge.']} ghost={1}/><p>Compare how the two countries approach<br/>pay information, care and the value of work.</p></div>
+    <div className="policy-list">{POLICIES.map((policy,i)=><article className={`policy ${active===i?'open':''}`} key={policy.title}><h3><button id={`policy-button-${i}`} aria-expanded={active===i} aria-controls={`policy-panel-${i}`} onClick={()=>setActive(active===i?-1:i)}><span className="policy-row-brief"><span className="policy-number">0{i+1}</span><span>{policy.title}</span></span><span className="policy-word" aria-hidden="true">{['Pay.','Care.','Value.'][i]}</span><span className="policy-toggle">{active===i ? <Minus/> : <Plus/>}</span></button></h3><div className="policy-panel" id={`policy-panel-${i}`} role="region" aria-labelledby={`policy-button-${i}`} hidden={active!==i}><div className="policy-image" aria-hidden="true"><EditorialImage name={['office','people','building'][i]}/><span>{['Make pay visible.','Share responsibility.','Recognise equal value.'][i]}</span><ArrowUpRight/></div><p className="policy-question">{policy.question}</p><p className="eyebrow policy-label">{policy.label}</p><div className="policy-countries"><div><h4><i className="country-dot de"/>Germany</h4><p>{policy.de}</p><SourceLink name={policy.deSource}>German source</SourceLink></div><div><h4><i className="country-dot se"/>Sweden</h4><p>{policy.se}</p><SourceLink name={policy.seSource}>Swedish source</SourceLink></div></div><p className="policy-takeaway"><span>What this means</span>{policy.takeaway}</p></div></article>)}</div>
     <aside className="eu-note"><span className="eyebrow">The European context / 2026</span><h3>A common framework.<br/>National implementation still matters.</h3><p>The EU Pay Transparency Directive was adopted in 2023, with a national transposition deadline of 7 June 2026. Its measures include pay information and stronger enforcement. The deadline alone does not establish that every national measure is in force; the German 2017 provisions above are a historical baseline.</p><SourceLink name="ec">European Commission: implementation context</SourceLink></aside>
   </section>;
 }
@@ -129,10 +168,12 @@ function Verdict() {
 
 function Sources() {
   return <section id="sources" className="sources section-pad" aria-labelledby="sources-title"><div className="section-heading"><p className="eyebrow">Read the evidence</p><h2 id="sources-title">Sources & method.</h2><p>Transparent numbers.<br/>Traceable claims.</p></div><div className="method-grid"><div><h3>What we compare</h3><p>Average gross hourly earnings of male and female employees in enterprises with 10 or more employees. Industry, construction and services; public administration, defence and compulsory social security are excluded (NACE B–S, excluding O).</p><p className="formula">Gap = (men’s average − women’s average)<br/>÷ men’s average × 100</p></div><div><h3>What we do not claim</h3><p>This is an unadjusted economy-wide indicator, not a measure of identical-job discrimination or all of SDG 8.5. National publications may use different coverage or pay concepts. The policy comparison explains mechanisms; it does not estimate their causal effect.</p><p className="chart-note">Data update: {SOURCE_UPDATED}. Retrieved: {RETRIEVED}. Latest common year in this snapshot: 2024. Germany’s 2022 series break is marked in the chart.</p></div></div>
-      <ol className="source-list">{Object.entries(SOURCES).map(([key,source],i)=><li key={key}><span className="source-number">{String(i+1).padStart(2,'0')}</span><a href={source.url} target="_blank" rel="noreferrer"><span>{source.title}<small>{source.note}</small></span><ArrowUpRight size={20}/></a></li>)}</ol><a href="/data/eurostat-sdg-05-20.json" className="text-link snapshot-link" download>Download the Eurostat data snapshot <ArrowDown size={14}/></a><p className="design-credit">Workplace photography is illustrative, not country-specific. Presentation references: the supplied motion-design video and CFR’s interactive storytelling format. CFR is not a source for the pay comparison.</p>
+      <ol className="source-list">{Object.entries(SOURCES).map(([key,source],i)=><li key={key}><span className="source-number">{String(i+1).padStart(2,'0')}</span><a href={source.url} target="_blank" rel="noreferrer"><span>{source.title}<small>{source.note}</small></span><ArrowUpRight size={20}/></a></li>)}</ol><a href="/data/eurostat-sdg-05-20.json" className="text-link snapshot-link" download>Download the Eurostat data snapshot <ArrowDown size={14}/></a><p className="design-credit">The opening campus image is AI-generated. Other workplace imagery is illustrative, not country-specific. Presentation references: the supplied motion-design video and CFR’s interactive storytelling format. FIND and CFR are visual references, not sources for the pay comparison.</p>
     </section>;
 }
 
 export default function App() {
-  return <><a className="skip-link" href="#meaning">Skip to content</a><Header/><main><Hero/><Meaning/><Compare/><Trend/><Drivers/><Policies/><Verdict/><Sources/></main><footer><a className="brand" href="#top">EQUAL<span>/ 8.5</span></a><p>Equal work. Equal value. Equal pay.</p><a href="#top">Back to top <ArrowUp size={16}/></a></footer></>;
+  const root = useRef(null);
+  useEditorialMotion(root);
+  return <div ref={root}><a className="skip-link" href="#meaning">Skip to content</a><Header/><main><Hero/><Meaning/><Compare/><Trend/><Drivers/><div className="tone-transition" aria-hidden="true"/><Policies/><Verdict/><Sources/></main><footer className="editorial-footer"><div className="footer-top"><a className="brand" href="#top">EQUAL<span>/ 8.5</span></a><p>Equal work. Equal value. Equal pay.</p><a href="#top">Back to top <ArrowUp size={16}/></a></div><a className="footer-word" href="#top" aria-label="Equal 8.5 — return to top">EQUAL<span>↗</span></a><div className="footer-bottom"><span>Germany × Sweden</span><span>A shared ambition for 2030.</span></div></footer></div>;
 }

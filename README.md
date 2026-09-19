@@ -27,7 +27,9 @@ Vite produces `dist/`, suitable for Vercel or another static host. The existing 
 - A qualified conclusion, methodology, direct official sources and downloadable source data.
 - Responsive layout, reduced-motion support, keyboard focus, mobile menu with Escape handling and print styles.
 
-The existing English presentation and cream / pale blue / orange visual palette are retained. Workplace photography is illustrative, not evidence of the location of a country. The supplied video and CFR are visual references only.
+The English presentation uses the supplied FIND visual specifications: Instrument Sans, Lora for the closing editorial statement, near-black / light-gray surfaces, large typography, four nested chevron image windows and an original cloud-campus hero. The hero blends into an image-filled EQUAL wordmark during scrolling. GSAP provides heading reveals, image parallax and a transition into the dark policy section. The policy comparisons retain explicit accessible expand/collapse buttons. Workplace photography is illustrative; the opening campus is AI-generated and is not a real German or Swedish location. FIND and CFR are visual references only.
+
+The design uses a separate fluid geometry unit rather than reducing the browser's root font size. Body copy remains readable at narrow widths. Responsive WebP assets cover 375, 768, 1024, 1440 and 1920 pixels; fonts are hosted locally. Reference-only FIND images, property copy, testimonials, and branding are not included.
 
 ## Data and interpretation
 
@@ -45,8 +47,8 @@ Sources and prose are in `src/data/content.js`. To update the series, check the 
 
 ## Verification for this revision
 
-Production build and production dependency audit passed. A DOM-based check against the production bundle verified chart values for 2014/2022/2024, provisional and series-break notes, accordion open/close states, data table, mobile menu close/Escape, internal anchors and no runtime errors. This is not a substitute for browser visual verification; the connected browser was unavailable during this revision.
+The previous data revision passed production build, dependency audit and DOM interaction checks. The visual revision adds browser checks at desktop and 375-pixel mobile widths: hero, typography, fixed navigation, policy expansion, year-slider values and data-table content. Mobile horizontal overflow was corrected. Reduced-motion handling disables smooth scrolling and scroll-triggered reveals, leaving all content accessible.
 
 ## Reuse and license
 
-The project adapts MotionFolio by Firdaus Zickrian under the MIT License. The original copyright notice remains in `LICENSE`; attribution is retained in `THIRD_PARTY_NOTICES.md`. Existing assets and unused animation utilities remain available. The presentation uses native scrolling so anchor navigation, keyboard use and reduced-motion preferences do not depend on a scroll interception library.
+The project adapts MotionFolio by Firdaus Zickrian under the MIT License. The original copyright notice remains in `LICENSE`; attribution is retained in `THIRD_PARTY_NOTICES.md`. Existing assets and unused animation utilities remain available. Lenis enhances wheel scrolling on fine-pointer devices; touch and reduced-motion preferences use native scrolling. Anchor links, keyboard controls and data interactions remain functional without scroll animation.
